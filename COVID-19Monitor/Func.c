@@ -35,6 +35,7 @@ int coincidence_detection (int x, int y, struct CLUSTER *cluster, int clust_num,
 
 void init_MAP() {
 
+    //随机生成地图大小的相关数据
     srand((unsigned)time(0));
 
     int map_width = 0;
@@ -52,7 +53,8 @@ void init_MAP() {
     int clust_num = clust_num_x * clust_num_y;
     int flat_num = clust_num * 10;
     int user_num = 1000;
-
+    
+    //初始化节簇点位置
     struct CLUSTER *cluster = (struct CLUSTER*) malloc(clust_num * sizeof(struct CLUSTER));
     for (int i = 0; i < clust_num_x; i++) {
         for (int j = 0; j < clust_num_y; j++) {
@@ -61,6 +63,7 @@ void init_MAP() {
         }
     }
 
+    //初始化公寓的位置
     struct FLAT *flat = (struct FLAT *)malloc(flat_num * sizeof(struct FLAT));
     int direction = 0;
     int flat_x_tmp = 0;
@@ -87,11 +90,7 @@ void init_MAP() {
         }
     }
 
-    struct USER *user = (struct USER*) malloc(user_num * sizeof(struct USER));
-    for (int i = 0; i < user_num; i++) {
-        user[i].ID = i;
-    }
-
+    //将地图数据写入到文件“map.config”中
     FILE *fp = fopen("map.config", "w+");
     fprintf(fp, "%d %d\n%d %d\n%d\n%d\n", map_width, map_height, clust_num_x, clust_num_y, flat_num, user_num);
     for (int i = 0; i < flat_num; i++) {
@@ -104,26 +103,26 @@ void init_MAP() {
 
     free(cluster);
     free(flat);
-    free(user);
 }
 
 void USER_move(struct FLAT *flat, struct USER *user, int user_num, int flat_num, int *broadcast, int time_stamp) {
     srand((unsigned)time(0));
 
     for (int i = 0; i < user_num; i++) {
+        //将近14天的轨迹推后一天
         for (int j = 0; j < 13; j++) {
             user[i].trail[27-j*2] = user[i].trail[27-(j+1)*2];
             user[i].trail[27-j*2-1] = user[i].trail[27-(j+1)*2-1];
         }
-        user[i].trail[0] = rand() % flat_num;
-        user[i].trail[1] = rand() % 6;
+        user[i].trail[0] = rand() % flat_num;       //得到今天的公寓楼编号 
+        user[i].trail[1] = rand() % 6;              //得到今天的单元号
         broadcast[i*3] = flat[user[i].trail[0]].unit_add[user[i].trail[1]*2];
         broadcast[i*3+1] = flat[user[i].trail[0]].unit_add[user[i].trail[1]*2+1];
-        broadcast[i*3+2] = user[i].infected;
+        broadcast[i*3+2] = user[i].infected;        //将自己今天的信息广播出去，好让其他用户知道哪些用户离自己2km
         user[i].other_user[i*4] = time_stamp;
         user[i].other_user[i*4+1] = user[i].infected;
         user[i].other_user[i*4+2] = user[i].trail[0];
-        user[i].other_user[i*4+3] = user[i].trail[1];
+        user[i].other_user[i*4+3] = user[i].trail[1];    //更新自己的用户信息
     }
 }
 
@@ -131,15 +130,15 @@ void UPDATE(struct CLUSTER *cluster, struct USER *user, struct FLAT *flat, int *
     
     for (int i = 0; i < user_num; i++) {
         for (int j = i+1; j < user_num; j++) {
-            if ((((broadcast[i*3] - broadcast[j*3])^2) + ((broadcast[i*3+1] - broadcast[j*3+1])^2)) <= 40000) {
+            if ((((broadcast[i*3] - broadcast[j*3])^2) + ((broadcast[i*3+1] - broadcast[j*3+1])^2)) <= 40000) {     //寻找距离自己2km以内的用户
                 if ((broadcast[i*3] == broadcast[j*3]) && (broadcast[i*3+1] == broadcast[j*3+1])) {
                     if (broadcast[i*3+2] || broadcast[j*3+2]) {
                         user[i].infected = 1;
                         user[j].infected = 1;
-                    }
+                    }//已经被感染的用户会刚染同单元的健康用户
                 }
-                for (int k = 0; k < user_num; k++){
-                    if (user[i].other_user[k*4] > user[j].other_user[k*4]) {
+                for (int k = 0; k < user_num; k++){  //两个2km之内的用户交换数据
+                    if (user[i].other_user[k*4] > user[j].other_user[k*4]) {    //以时间戳为依据更新数据
                         user[j].other_user[k*4] = user[i].other_user[k*4];
                         user[j].other_user[k*4+1] = user[i].other_user[k*4+1];
                         user[j].other_user[k*4+2] = user[i].other_user[k*4+2];
@@ -156,6 +155,7 @@ void UPDATE(struct CLUSTER *cluster, struct USER *user, struct FLAT *flat, int *
         }
     }
 
+    //用户和节簇点通信，把数据上传到云端
     for (int i = 0; i < user_num; i++) {
         for (int j = 0; j < clust_num; j++) {
             if ((broadcast[i*3] - cluster[j].x) ^ 2 + (broadcast[i*3+1] - cluster[j].y) ^ 2 <= 40000) {

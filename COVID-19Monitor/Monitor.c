@@ -6,7 +6,7 @@
 #include "DataStructure.h"
 
 int main (int argc, char *argv[]) {
-    //init_MAP();
+    
     if (argc > 1) {
         if (!strcmp(argv[1], "init")) {
             init_MAP();
@@ -21,6 +21,7 @@ int main (int argc, char *argv[]) {
     int flat_num;
     int user_num;
 
+    //从文件中载入地图信息
     FILE *fp = fopen("map.config", "r+");
     fscanf(fp, "%d%d", &map_width, &map_height);
     fscanf(fp, "%d%d", &clust_num_x, &clust_num_y);
@@ -76,7 +77,6 @@ int main (int argc, char *argv[]) {
         UPDATE(cluster, user, flat, CLOUD_user, user_num, clust_num, broadcast, time_stamp);
         
         printf("当前天数：%d，按‘1’选择追踪用户轨迹，按‘2’统计某一地点感染人数，按c键继续模拟，按q退出\n", time_stamp);
-        //scanf("%c", &controller);
         controller = getchar();
         getchar();
         infected_num = 0;
@@ -91,7 +91,6 @@ int main (int argc, char *argv[]) {
                         printf("第%d天，(%d,%d)\n", CLOUD_user[userID*56+i*4], CLOUD_user[userID*56+i*4+2]+1, CLOUD_user[userID*56+i*4+3]+1);
                     }
                     printf("按‘1’选择追踪用户轨迹，按‘2’统计某一地点感染人数，按c键继续模拟，按q退出\n");
-                    //scanf("%c", &controller);
                     controller = getchar();
                     getchar();
                     break;
@@ -99,6 +98,7 @@ int main (int argc, char *argv[]) {
                     printf("请选择想要查询的地点，横纵坐标范围0~%d，0~%d\n", map_width, map_height);
                     scanf("%d%d", &detec_x, &detec_y);\
                     getchar();
+                    //直接寻找查询点1km范围内的公寓楼，找公寓楼里的人数
                     for (int i = 0; i < flat_num; i++) {
                         for (int j = 0; j < 6; j++) {
                             if ((pingfang(detec_x - flat[i].unit_add[j*2]) + pingfang(detec_y - flat[i].unit_add[j*2+1])) <= 10000) {
@@ -114,7 +114,6 @@ int main (int argc, char *argv[]) {
                     }
                     printf("坐标(%d，%d)周围1km的感染人数为：%d\n", detec_x, detec_y, infected_num);
                     printf("按‘1’选择追踪用户轨迹，按‘2’统计某一地点感染人数，按c键继续模拟，按q退出\n");
-                    //scanf("%c", &controller);
                     controller = getchar();
                     getchar();
                     break;
