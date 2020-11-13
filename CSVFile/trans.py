@@ -1,4 +1,5 @@
 import struct
+import threading
 
 def str2bin(s):
     indice = 0
@@ -53,3 +54,13 @@ def bin2str(b):
     #print(b[-2])
     strbuf += ';'
     return strbuf
+
+class th_str2bin(threading.Thread):
+    def __init__(self, threadID, strline):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.strline = strline
+        self.binflow = []
+    
+    def run(self):
+        self.binflow = str2bin(self.strline)
