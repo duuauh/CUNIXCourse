@@ -14,15 +14,15 @@ def str2bin(s):
                 binflow += struct.pack('>b', ord(c))
                 indice += 1
                 strbuf = ''
-            elif c==';':
-                binflow += struct.pack('>b', int(strbuf))
-                strbuf = ''
+            elif c=='\n':
+                break
             elif indice==0:
                 strbuf += c
             elif indice==3:
                 strbuf += c
             else:
                 binflow += struct.pack('>b', ord(c))
+        binflow += struct.pack('>I', int(strbuf))
         binflow += struct.pack('>b', ord('\n'))
     else:
         for c in s:
@@ -52,7 +52,6 @@ def bin2str(b):
     
     strbuf += str(b[-2])
     #print(b[-2])
-    strbuf += ';'
     return strbuf
 
 class th_str2bin(threading.Thread):
