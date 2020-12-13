@@ -1,0 +1,3 @@
+[submodule "NNInference/pybind11"]
+	path = NNInference/pybind11
+	url = https://github.com/pybind/pybind11.git

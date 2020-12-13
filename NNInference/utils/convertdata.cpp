@@ -5,33 +5,19 @@ using namespace std;
 
 int main() {
     ifstream infile;
-    infile.open("../params.bin", ios::in | ios::binary);
-    float* conv1weight = new float[144];
-    infile.read((char*)conv1weight, 144*sizeof(float));
+    ofstream outfile;
 
-    cout<<"read by block"<<endl;
-    for(int i=0; i<16; i++){
-        for(int j=0; j<9; j++){
-            cout<<conv1weight[i*16+j]<<' ';
-        }
-        cout<<endl;
+    infile.open("/home/zzl/zzlWorkspace/NNInference/params.txt", ios::in);
+    outfile.open("/home/zzl/zzlWorkspace/NNInference/params.bin", ios::out | ios::binary);
+
+    for(int i=0; i<43530; i++) {
+        float tmp;
+        infile>>tmp;
+        outfile.write((char*)&tmp, sizeof(float));
     }
-    
+
     infile.close();
-    cout<<endl;
-
-    ifstream infile2;
-    infile2.open("../params.bin", ios::in | ios::binary);
-    cout<<"read one by one"<<endl;
-    for(int i=0; i<16; i++){
-        for(int j=0; j<9; j++){
-            float tmp;
-            infile2.read((char*)&tmp, sizeof(float));
-            cout<<tmp<<' ';
-        }
-        cout<<endl;
-    }
-    infile2.close();
+    outfile.close();
 
     return 0;
 }

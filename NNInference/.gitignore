@@ -1,0 +1,11 @@
+datasets/
+
+MNIST/data/raw/
+
+test/
+
+utils/convertdata
+utils/MNISTNet.cpython-38-x86_64-linux-gnu.so
+
+params.txt
+params.bin
